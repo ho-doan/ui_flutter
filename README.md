@@ -1,5 +1,45 @@
 # ui_flutter
-<img src="./ui_1.png" witch=150/>
+
+# UI 1
+
+<img src="./assets/ui_1.png" witch=150/>
+
+## USE
+
+```dart
+Card(
+  shape: RoundedCustomRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+      side: const BorderSide(color: Colors.red)),
+  child: const SizedBox(
+    width: 100,
+    height: 100,
+  ),
+)
+```
+
+[Go to code](#ui-1)
+
+# UI 2
+
+<img src="./assets/ui_2.png" witch=150/>
+
+## USE
+
+```dart
+CupelationSwitchCustom(
+  onChanged: (value) {
+    setState(() => everyDays = !everyDays);
+  },
+  value: everyDays,
+  activeColor: AppColors.primary900,
+)
+```
+
+[Go to code](#ui-2)
+
+`#ui-1`
+
 ```dart
 class RoundedCustomRectangleBorder extends OutlinedBorder {
   const RoundedCustomRectangleBorder({
@@ -340,15 +380,505 @@ class _RoundedRectangleCustomToCircleBorder extends OutlinedBorder {
   }
 }
 ```
-# USE
+
+`#ui-2`
+
 ```dart
-Card(
-  shape: RoundedCustomRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-      side: const BorderSide(color: Colors.red)),
-  child: const SizedBox(
-    width: 100,
-    height: 100,
-  ),
-)
+class CupelationSwitchCustom extends StatefulWidget {
+  const CupelationSwitchCustom({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.activeColor,
+    this.trackColor,
+    this.thumbColor,
+    this.dragStartBehavior = DragStartBehavior.start,
+    this.width = 50,
+  });
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final Color? activeColor;
+  final Color? trackColor;
+  final Color? thumbColor;
+  final DragStartBehavior dragStartBehavior;
+  final double width;
+
+  @override
+  State<CupelationSwitchCustom> createState() => _CupelationSwitchCustomState();
+}
+
+class _CupelationSwitchCustomState extends State<CupelationSwitchCustom>
+    with TickerProviderStateMixin {
+  late TapGestureRecognizer _tap;
+  late HorizontalDragGestureRecognizer _drag;
+
+  late AnimationController _positionController;
+  late CurvedAnimation position;
+
+  late AnimationController _reactionController;
+  late Animation<double> _reaction;
+
+  bool get isInteractive => widget.onChanged != null;
+  bool needsPositionAnimation = false;
+
+  late double _kTrackWidth;
+  late double _kTrackHeight;
+  late double _kTrackRadius;
+  late double _kTrackInnerStart;
+  late double _kTrackInnerEnd;
+  late double _kTrackInnerLength;
+  late double radius;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _kTrackWidth = widget.width;
+    _kTrackHeight = widget.width / 1.9;
+    _kTrackRadius = _kTrackHeight / 2.0;
+    _kTrackInnerStart = _kTrackHeight / 2.0;
+    _kTrackInnerEnd = _kTrackWidth - _kTrackInnerStart - 2;
+    _kTrackInnerLength = _kTrackInnerEnd - _kTrackInnerStart;
+    radius = _kTrackHeight / 2;
+
+    _tap = TapGestureRecognizer()
+      ..onTapDown = _handleTapDown
+      ..onTapUp = _handleTapUp
+      ..onTap = _handleTap
+      ..onTapCancel = _handleTapCancel;
+    _drag = HorizontalDragGestureRecognizer()
+      ..onStart = _handleDragStart
+      ..onUpdate = _handleDragUpdate
+      ..onEnd = _handleDragEnd
+      ..dragStartBehavior = widget.dragStartBehavior;
+
+    _positionController = AnimationController(
+      duration: _kToggleDuration,
+      value: widget.value ? 1.0 : 0.0,
+      vsync: this,
+    );
+    position = CurvedAnimation(
+      parent: _positionController,
+      curve: Curves.linear,
+    );
+    _reactionController = AnimationController(
+      duration: _kReactionDuration,
+      vsync: this,
+    );
+    _reaction = CurvedAnimation(
+      parent: _reactionController,
+      curve: Curves.ease,
+    );
+  }
+
+  @override
+  void didUpdateWidget(CupelationSwitchCustom oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _drag.dragStartBehavior = widget.dragStartBehavior;
+
+    if (needsPositionAnimation || oldWidget.value != widget.value) {
+      _resumePositionAnimation(isLinear: needsPositionAnimation);
+    }
+  }
+
+  void _resumePositionAnimation({bool isLinear = true}) {
+    needsPositionAnimation = false;
+    position
+      ..curve = isLinear ? Curves.linear : Curves.ease
+      ..reverseCurve = isLinear ? Curves.linear : Curves.ease.flipped;
+    if (widget.value) {
+      _positionController.forward();
+    } else {
+      _positionController.reverse();
+    }
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    if (isInteractive) {
+      needsPositionAnimation = false;
+    }
+    _reactionController.forward();
+  }
+
+  void _handleTap() {
+    if (isInteractive) {
+      widget.onChanged!(!widget.value);
+      _emitVibration();
+    }
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    if (isInteractive) {
+      needsPositionAnimation = false;
+      _reactionController.reverse();
+    }
+  }
+
+  void _handleTapCancel() {
+    if (isInteractive) {
+      _reactionController.reverse();
+    }
+  }
+
+  void _handleDragStart(DragStartDetails details) {
+    if (isInteractive) {
+      needsPositionAnimation = false;
+      _reactionController.forward();
+      _emitVibration();
+    }
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    if (isInteractive) {
+      position
+        ..curve = Curves.linear
+        ..reverseCurve = Curves.linear;
+      final double delta = details.primaryDelta! / _kTrackInnerLength;
+      switch (Directionality.of(context)) {
+        case TextDirection.rtl:
+          _positionController.value -= delta;
+          break;
+        case TextDirection.ltr:
+          _positionController.value += delta;
+          break;
+      }
+    }
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    // Deferring the animation to the next build phase.
+    setState(() {
+      needsPositionAnimation = true;
+    });
+    // Call onChanged when the user's intent to change value is clear.
+    if (position.value >= 0.5 != widget.value) {
+      widget.onChanged!(!widget.value);
+    }
+    _reactionController.reverse();
+  }
+
+  void _emitVibration() {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        HapticFeedback.lightImpact();
+        break;
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (needsPositionAnimation) {
+      _resumePositionAnimation();
+    }
+    return MouseRegion(
+      cursor: isInteractive && kIsWeb
+          ? SystemMouseCursors.click
+          : MouseCursor.defer,
+      child: Opacity(
+        opacity:
+            widget.onChanged == null ? _kCupertinoSwitchDisabledOpacity : 1.0,
+        child: _CupertinoSwitchRenderObjectWidget(
+          value: widget.value,
+          activeColor: CupertinoDynamicColor.resolve(
+            widget.activeColor ?? CupertinoColors.systemGreen,
+            context,
+          ),
+          trackColor: CupertinoDynamicColor.resolve(
+              widget.trackColor ?? CupertinoColors.secondarySystemFill,
+              context),
+          thumbColor: CupertinoDynamicColor.resolve(
+              widget.thumbColor ?? CupertinoColors.white, context),
+          onChanged: widget.onChanged,
+          textDirection: Directionality.of(context),
+          state: this,
+          additionalConstraints: BoxConstraints.tightFor(
+            width: _kTrackWidth,
+            height: _kTrackHeight,
+          ),
+          kTrackWidth: _kTrackWidth,
+          radius: radius,
+          kTrackHeight: _kTrackHeight,
+          kTrackInnerEnd: _kTrackInnerEnd,
+          kTrackInnerStart: _kTrackInnerStart,
+          kTrackRadius: _kTrackRadius,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _tap.dispose();
+    _drag.dispose();
+
+    _positionController.dispose();
+    _reactionController.dispose();
+    super.dispose();
+  }
+}
+
+class _CupertinoSwitchRenderObjectWidget extends LeafRenderObjectWidget {
+  const _CupertinoSwitchRenderObjectWidget({
+    required this.value,
+    required this.activeColor,
+    required this.trackColor,
+    required this.thumbColor,
+    required this.onChanged,
+    required this.textDirection,
+    required this.state,
+    required this.additionalConstraints,
+    required this.kTrackWidth,
+    required this.radius,
+    required this.kTrackHeight,
+    required this.kTrackInnerEnd,
+    required this.kTrackInnerStart,
+    required this.kTrackRadius,
+  });
+
+  final bool value;
+  final Color activeColor;
+  final Color trackColor;
+  final Color thumbColor;
+  final ValueChanged<bool>? onChanged;
+  final _CupelationSwitchCustomState state;
+  final TextDirection textDirection;
+  final BoxConstraints additionalConstraints;
+  final double kTrackWidth;
+  final double radius;
+  final double kTrackHeight;
+  final double kTrackInnerEnd;
+  final double kTrackInnerStart;
+  final double kTrackRadius;
+
+  @override
+  _RenderCupertinoSwitch createRenderObject(BuildContext context) {
+    return _RenderCupertinoSwitch(
+      value: value,
+      activeColor: activeColor,
+      trackColor: trackColor,
+      thumbColor: thumbColor,
+      onChanged: onChanged,
+      textDirection: textDirection,
+      state: state,
+      additionalConstraints: additionalConstraints,
+      kTrackWidth: kTrackWidth,
+      radius: radius,
+      kTrackHeight: kTrackHeight,
+      kTrackInnerEnd: kTrackInnerEnd,
+      kTrackInnerStart: kTrackInnerStart,
+      kTrackRadius: kTrackRadius,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+      BuildContext context, _RenderCupertinoSwitch renderObject) {
+    renderObject
+      ..value = value
+      ..activeColor = activeColor
+      ..trackColor = trackColor
+      ..thumbColor = thumbColor
+      ..onChanged = onChanged
+      ..textDirection = textDirection;
+  }
+}
+
+// Opacity of a disabled switch, as eye-balled from iOS Simulator on Mac.
+const double _kCupertinoSwitchDisabledOpacity = 0.5;
+
+const Duration _kReactionDuration = Duration(milliseconds: 300);
+const Duration _kToggleDuration = Duration(milliseconds: 200);
+
+class _RenderCupertinoSwitch extends RenderConstrainedBox {
+  _RenderCupertinoSwitch({
+    required bool value,
+    required Color activeColor,
+    required Color trackColor,
+    required Color thumbColor,
+    ValueChanged<bool>? onChanged,
+    required TextDirection textDirection,
+    required _CupelationSwitchCustomState state,
+    required super.additionalConstraints,
+    required this.kTrackWidth,
+    required this.radius,
+    required this.kTrackHeight,
+    required this.kTrackInnerStart,
+    required this.kTrackInnerEnd,
+    required this.kTrackRadius,
+  })  : _value = value,
+        _activeColor = activeColor,
+        _trackColor = trackColor,
+        _thumbPainter = CupertinoThumbPainter.switchThumb(color: thumbColor),
+        _onChanged = onChanged,
+        _textDirection = textDirection,
+        _state = state {
+    state.position.addListener(markNeedsPaint);
+    state._reaction.addListener(markNeedsPaint);
+  }
+
+  final double kTrackWidth;
+  final double radius;
+  final double kTrackHeight;
+  final double kTrackInnerStart;
+  final double kTrackRadius;
+  final double kTrackInnerEnd;
+
+  final _CupelationSwitchCustomState _state;
+
+  bool _value;
+  set value(bool value) {
+    if (value == _value) {
+      return;
+    }
+    _value = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  Color _activeColor;
+  set activeColor(Color value) {
+    if (value == _activeColor) {
+      return;
+    }
+    _activeColor = value;
+    markNeedsPaint();
+  }
+
+  Color _trackColor;
+  set trackColor(Color value) {
+    if (value == _trackColor) {
+      return;
+    }
+    _trackColor = value;
+    markNeedsPaint();
+  }
+
+  CupertinoThumbPainter _thumbPainter;
+  set thumbColor(Color value) {
+    if (value == _thumbPainter.color) {
+      return;
+    }
+    _thumbPainter = CupertinoThumbPainter.switchThumb(color: value);
+    markNeedsPaint();
+  }
+
+  ValueChanged<bool>? _onChanged;
+  set onChanged(ValueChanged<bool>? value) {
+    if (value == _onChanged) {
+      return;
+    }
+    final bool wasInteractive = isInteractive;
+    _onChanged = value;
+    if (wasInteractive != isInteractive) {
+      markNeedsPaint();
+      markNeedsSemanticsUpdate();
+    }
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (_textDirection == value) {
+      return;
+    }
+    _textDirection = value;
+    markNeedsPaint();
+  }
+
+  bool get isInteractive => _onChanged != null;
+
+  @override
+  bool hitTestSelf(Offset position) => true;
+
+  @override
+  void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
+    assert(debugHandleEvent(event, entry));
+    if (event is PointerDownEvent && isInteractive) {
+      _state._drag.addPointer(event);
+      _state._tap.addPointer(event);
+    }
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+
+    if (isInteractive) {
+      config.onTap = _state._handleTap;
+    }
+
+    config.isEnabled = isInteractive;
+    config.isToggled = _value;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final Canvas canvas = context.canvas;
+
+    final double currentValue = _state.position.value;
+    final double currentReactionValue = _state._reaction.value;
+
+    final double visualPosition;
+    switch (_textDirection) {
+      case TextDirection.rtl:
+        visualPosition = 1.0 - currentValue;
+        break;
+      case TextDirection.ltr:
+        visualPosition = currentValue;
+        break;
+    }
+
+    final Paint paint = Paint()
+      ..color = Color.lerp(_trackColor, _activeColor, currentValue)!;
+
+    final Rect trackRect = Rect.fromLTWH(
+      offset.dx + (size.width - kTrackWidth) / 2.0,
+      offset.dy + (size.height - kTrackHeight) / 2.0,
+      kTrackWidth,
+      kTrackHeight,
+    );
+    final RRect trackRRect =
+        RRect.fromRectAndRadius(trackRect, Radius.circular(kTrackRadius));
+    canvas.drawRRect(trackRRect, paint);
+
+    final double currentThumbExtension =
+        CupertinoThumbPainter.extension * currentReactionValue;
+    final double thumbLeft = lerpDouble(
+      trackRect.left + kTrackInnerStart - radius,
+      trackRect.left + kTrackInnerEnd - radius - currentThumbExtension,
+      visualPosition,
+    )!;
+    final double thumbRight = lerpDouble(
+      trackRect.left + kTrackInnerStart + radius + currentThumbExtension,
+      trackRect.left + kTrackInnerEnd + radius,
+      visualPosition,
+    )!;
+    final double thumbCenterY = offset.dy + size.height / 2.0;
+    final Rect thumbBounds = Rect.fromLTRB(
+      thumbLeft + 2,
+      thumbCenterY - radius + 2,
+      thumbRight - 2,
+      thumbCenterY + radius - 2,
+    );
+
+    _clipRRectLayer.layer = context
+        .pushClipRRect(needsCompositing, Offset.zero, thumbBounds, trackRRect,
+            (PaintingContext innerContext, Offset offset) {
+      _thumbPainter.paint(innerContext.canvas, thumbBounds);
+    }, oldLayer: _clipRRectLayer.layer);
+  }
+
+  final LayerHandle<ClipRRectLayer> _clipRRectLayer =
+      LayerHandle<ClipRRectLayer>();
+
+  @override
+  void dispose() {
+    _clipRRectLayer.layer = null;
+    super.dispose();
+  }
+}
 ```

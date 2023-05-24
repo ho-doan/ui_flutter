@@ -18,6 +18,13 @@
 
 [Go to code](#code-3)
 
+# UI 3
+
+<img src="./assets/ui_4.png" witch=150/>
+
+[Go to code](#code-4)
+
+
 # Code
 
 ### Code 1
@@ -677,65 +684,124 @@ TickContainer(
 ```
 
 ```dart
-class TickContainer extends StatelessWidget {
-  const TickContainer({
+### Code 4
+
+#### USE
+
+```dart
+TickWidget(
+  height: 36.sf,
+  width: 158.sf,
+  tickWidth: 36.sf,
+  tickHeight: 23.5.sf,
+  radius: 8.sf,
+  tick: tick,
+  icon: Assets.icon.radio.tick.svg(
+    height: 6.sf,
+    width: 3.75.sf,
+    fit: BoxFit.cover,
+  ),
+  borderColor: AppColors.white,
+  child: Text(
+    hour.name,
+    style: AppTextStyle.normalStyle.cp(
+      fontSize: 14.sf,
+      fontWeight: tick ? FontWeight.w700 : FontWeight.w400,
+      height: 0,
+    ),
+  ),
+)
+```
+
+```dart
+class TickWidget extends StatelessWidget {
+  const TickWidget({
     super.key,
     this.radius = 10,
-    this.size = 100,
+    this.height = 36,
+    this.tickWidth = 36,
+    this.tickHeight = 23.5,
+    this.width = 158,
     this.color = Colors.red,
+    this.colorTick = Colors.green,
     this.child,
     this.icon,
     this.position = .6,
-  });
+    bool tick = true,
+    this.isEnable = true,
+    this.backgroundDisable = Colors.grey,
+    this.borderColor = Colors.grey,
+  }) : isTick = isEnable && tick;
   final double radius;
-  final double size;
+  final double width;
+  final double height;
+  final double tickWidth;
+  final double tickHeight;
+
   final Color color;
+  final Color backgroundDisable;
+  final Color colorTick;
+  final Color borderColor;
   final Widget? child;
   final Widget? icon;
   final double position;
+  final bool isTick;
+  final bool isEnable;
+  double get c2 => tickHeight * tickHeight + tickWidth * tickWidth;
+  double get c => sqrt(c2) / 2;
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isEnable ? Colors.white : backgroundDisable,
             borderRadius: BorderRadius.circular(radius),
-            border: Border.all(
-              color: color,
-              width: 2,
+            border: Border.all(color: borderColor),
+            boxShadow: const BoxShadow().from(
+              0,
+              2,
+              4,
+              0,
+              AppColors.black.withOpacity(.1),
             ),
           ),
-          height: size,
-          width: size,
+          height: height,
+          width: width,
           child: Center(
             child: child,
           ),
         ),
-        Positioned(
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
-          child: ClipPath(
-            clipper: CustomDraw(position: position),
-            child: Container(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(radius),
+        if (isTick) ...[
+          Positioned(
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            child: ClipPath(
+              clipper: CustomDraw(
+                positionX: tickWidth,
+                positionY: tickHeight,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorTick,
+                  borderRadius: BorderRadius.circular(radius),
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          top: (size * position) / 10,
-          right: (size * position) / 10,
-          child: icon ??
-              const Icon(
-                Icons.check,
-                color: Colors.white,
-              ),
-        ),
+          Positioned(
+            top: c / (icon != null ? 4 : 8),
+            right: c / (icon != null ? 4 : 8),
+            child: icon ??
+                Icon(
+                  Icons.check,
+                  size: (tickHeight + tickWidth) / 4,
+                  color: Colors.red,
+                ),
+          ),
+        ],
       ],
     );
   }
@@ -743,17 +809,18 @@ class TickContainer extends StatelessWidget {
 
 class CustomDraw extends CustomClipper<Path> {
   CustomDraw({
-    this.position = .5,
+    this.positionX = .5,
+    this.positionY = .6,
   });
 
-  final double position;
+  final double positionX;
+  final double positionY;
   @override
   Path getClip(Size size) {
     final path = Path();
-    path.moveTo(size.width * position, 0);
+    path.moveTo(size.width - positionX, 0);
+    path.lineTo(size.width, positionY);
     path.lineTo(size.width, 0);
-    path.lineTo(size.width, size.width - size.width * position);
-    path.lineTo(size.width * position, 0);
 
     path.close();
     return path;

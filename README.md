@@ -2,22 +2,15 @@
 <img src="./ui_1.png" witch=150/>
 ```dart
 class RoundedCustomRectangleBorder extends OutlinedBorder {
-  /// Creates a rounded rectangle border.
-  ///
-  /// The arguments must not be null.
   const RoundedCustomRectangleBorder({
     BorderSide side = BorderSide.none,
     this.borderRadius = BorderRadius.zero,
   }) : super(side: side);
-
-  /// The radii for each corner.
   final BorderRadiusGeometry borderRadius;
-
   @override
   EdgeInsetsGeometry get dimensions {
     return EdgeInsets.all(side.width);
   }
-
   @override
   ShapeBorder scale(double t) {
     return RoundedRectangleBorder(
@@ -25,7 +18,6 @@ class RoundedCustomRectangleBorder extends OutlinedBorder {
       borderRadius: borderRadius * t,
     );
   }
-
   @override
   ShapeBorder? lerpFrom(ShapeBorder? a, double t) {
     if (a is RoundedRectangleBorder) {
@@ -63,9 +55,6 @@ class RoundedCustomRectangleBorder extends OutlinedBorder {
     }
     return super.lerpTo(b, t);
   }
-
-  /// Returns a copy of this RoundedRectangleBorder with the given fields
-  /// replaced with the new values.
   @override
   RoundedRectangleBorder copyWith(
       {BorderSide? side, BorderRadiusGeometry? borderRadius}) {

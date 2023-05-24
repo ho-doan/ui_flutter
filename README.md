@@ -4,7 +4,24 @@
 
 <img src="./assets/ui_1.png" witch=150/>
 
-## USE
+[Go to code](#code-1)
+
+# UI 2
+
+<img src="./assets/ui_2.png" witch=150/>
+
+[Go to code](#code-2)
+
+# UI 3
+
+<img src="./assets/ui_3.png" witch=150/>
+
+[Go to code](#code-3)
+
+# Code
+
+### Code 1
+#### USE
 
 ```dart
 Card(
@@ -17,46 +34,6 @@ Card(
   ),
 )
 ```
-
-[Go to code](#code-1)
-
-# UI 2
-
-<img src="./assets/ui_2.png" witch=150/>
-
-## USE
-
-```dart
-CupelationSwitchCustom(
-  onChanged: (value) {
-    setState(() => everyDays = !everyDays);
-  },
-  value: everyDays,
-  activeColor: AppColors.primary900,
-)
-```
-
-[Go to code](#code-2)
-
-# UI 3
-
-<img src="./assets/ui_3.png" witch=150/>
-
-## USE
-
-```dart
-TickContainer(
-  size: 137.sf,
-  radius: 8.sf,
-  color: AppColors.neutralGreen918Color,
-)
-```
-
-[Go to code](#code-3)
-
-# Code
-
-### Code 1
 
 ```dart
 class RoundedCustomRectangleBorder extends OutlinedBorder {
@@ -400,6 +377,17 @@ class _RoundedRectangleCustomToCircleBorder extends OutlinedBorder {
 ```
 
 ### Code 2
+#### USE
+
+```dart
+CupelationSwitchCustom(
+  onChanged: (value) {
+    setState(() => everyDays = !everyDays);
+  },
+  value: everyDays,
+  activeColor: AppColors.primary900,
+)
+```
 
 ```dart
 class RotatedCornerDecoration extends Decoration {
@@ -677,6 +665,16 @@ double calculateHypotenuse(double w, double h) => math.sqrt(w * w + h * h);
 ```
 
 ### Code 3
+
+#### USE
+
+```dart
+TickContainer(
+  size: 137.sf,
+  radius: 8.sf,
+  color: AppColors.neutralGreen918Color,
+)
+```
 
 ```dart
 class TickContainer extends StatelessWidget {

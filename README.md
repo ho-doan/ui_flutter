@@ -682,8 +682,6 @@ TickContainer(
   color: AppColors.neutralGreen918Color,
 )
 ```
-
-```dart
 ### Code 4
 
 #### USE

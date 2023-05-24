@@ -18,7 +18,7 @@ Card(
 )
 ```
 
-[Go to code](#ui-1)
+[Go to code](#code-1)
 
 # UI 2
 
@@ -36,9 +36,11 @@ CupelationSwitchCustom(
 )
 ```
 
-[Go to code](#ui-2)
+[Go to code](#code-2)
 
-`#ui-1`
+# Code
+
+### Code 1
 
 ```dart
 class RoundedCustomRectangleBorder extends OutlinedBorder {
@@ -381,7 +383,7 @@ class _RoundedRectangleCustomToCircleBorder extends OutlinedBorder {
 }
 ```
 
-`#ui-2`
+### Code 2
 
 ```dart
 class CupelationSwitchCustom extends StatefulWidget {
